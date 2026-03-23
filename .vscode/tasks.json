@@ -37,6 +37,20 @@
           }
         }
       }
+    },
+    // ✅ NEW: Auto-start Node.js backend
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/fashion-backend"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
     }
   ]
 }

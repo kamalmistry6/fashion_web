@@ -1,0 +1,23 @@
+<div class="sidenav" [ngClass]="collapsed ? 'sidenav-expanded' : ''">
+  <div class="sidebar-header">
+    <button class="logo" type="button" (click)="toggleCollapse()"
+      [attr.aria-label]="collapsed ? 'Collapse sidebar' : 'Expand sidebar'">
+      V
+    </button>
+    <div class="brand" *ngIf="collapsed">
+      <div class="logo-text">Vastra Admin</div>
+      <div class="logo-subtext">Control panel</div>
+    </div>
+  </div>
+
+  <ul class="sidenav-nav">
+    <li class="sidenav-nav-item" *ngFor="let data of navData">
+      <a class="sidenav-nav-link" [routerLink]="[data.RouterLink]" routerLinkActive="active">
+        <span class="sidenav-link-icon">
+          <app-icon [icon]="data.iconName" size="20px"></app-icon>
+          <span class="sidenav-link-text" *ngIf="collapsed">{{ data.label }}</span>
+        </span>
+      </a>
+    </li>
+  </ul>
+</div>
