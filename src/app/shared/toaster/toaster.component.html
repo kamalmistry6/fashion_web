@@ -1,0 +1,16 @@
+<div class="toaster-container">
+  <div
+    *ngFor="let toast of toasts"
+    class="toast"
+    [class.toast-success]="toast.type === 'success'"
+    [class.toast-error]="toast.type === 'error'"
+    [class.toast-warning]="toast.type === 'warning'"
+    [class.toast-info]="toast.type === 'info'"
+  >
+    <app-icon [icon]="icon(toast.type)" size="18px"></app-icon>
+    <span class="toast-message">{{ toast.message }}</span>
+    <button class="toast-close" (click)="remove(toast.id)">
+      <app-icon icon="lucide:x" size="14px"></app-icon>
+    </button>
+  </div>
+</div>

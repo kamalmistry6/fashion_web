@@ -5,6 +5,8 @@ const morgan = require("morgan");
 const productRoutes = require("./modules/product/product.routes");
 const categoryRoutes = require("./modules/category/category.routes");
 const reviewRoutes = require("./modules/review/review.routes");
+const materialRoutes = require("./modules/material/material.routes");
+const shopRoutes = require("./modules/shop/shop.routes");
 
 const app = express();
 
@@ -15,7 +17,9 @@ app.use(morgan("dev"));
 app.use("/uploads", express.static("uploads"));
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/materials", materialRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/shop", shopRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

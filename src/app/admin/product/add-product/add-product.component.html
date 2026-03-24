@@ -1,0 +1,281 @@
+<form [formGroup]="productForm" (ngSubmit)="submit()" class="page-container">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="breadcrumbs">
+        <span style="cursor: pointer">Products</span>
+        <app-icon icon="lucide:chevron-right" size="14px"></app-icon>
+        <span style="color: var(--foreground); font-weight: 500">
+          {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
+        </span>
+      </div>
+      <h1 class="page-title">{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
+    </div>
+
+    <div class="header-buttons">
+      <div class="btn btn-secondary" (click)="discard()">Discard</div>
+
+      <div class="btn btn-secondary">
+        <app-icon icon="lucide:save" size="16px"></app-icon>
+        Save Draft
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <app-icon icon="lucide:check" size="16px"></app-icon>
+        Publish Product
+      </button>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- LEFT COLUMN -->
+    <div class="column">
+      <!-- BASIC INFO -->
+      <div class="card">
+        <div class="card-title">Basic Information</div>
+
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input
+            class="mock-input"
+            formControlName="name"
+            placeholder="Enter product name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Slug</label>
+          <input class="mock-input muted" formControlName="slug" readonly />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea
+            class="mock-textarea"
+            formControlName="description"
+            rows="5"
+            placeholder="Enter product description"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- IMAGES -->
+      <div class="card">
+        <div class="card-title">
+          <span>Product Images</span>
+          <span class="image-count">{{ uploadedImages.length }} / 5</span>
+        </div>
+
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          (change)="onFileSelect($event)"
+          multiple
+          hidden
+          #fileInput
+        />
+
+        <div
+          class="upload-zone"
+          *ngIf="uploadedImages.length < 5"
+          (click)="fileInput.click()"
+        >
+          <app-icon icon="lucide:upload" size="24px" style="margin: 0 auto 12px auto; color: var(--muted-foreground)"></app-icon>
+          <div class="upload-text">Click to upload or drag and drop</div>
+          <div class="upload-subtext">PNG, JPG, WebP (max 5MB, up to 5 images)</div>
+        </div>
+
+        <div *ngIf="isUploading" class="upload-loading">Uploading...</div>
+
+        <div class="image-preview-grid" *ngIf="uploadedImages.length > 0">
+          <div
+            class="img-preview-card"
+            *ngFor="let img of uploadedImages; let i = index"
+            [class.is-primary]="img.is_primary"
+          >
+            <img [src]="getImageSrc(img)" alt="Product image" />
+            <div class="img-badge" *ngIf="img.is_primary">PRIMARY</div>
+            <div class="img-overlay">
+              <div
+                class="img-overlay-btn"
+                *ngIf="!img.is_primary"
+                (click)="setPrimary(i)"
+                title="Set as primary"
+              >
+                <app-icon icon="lucide:star" size="14px"></app-icon>
+              </div>
+              <div
+                class="img-overlay-btn danger"
+                (click)="removeImage(i)"
+                title="Remove image"
+              >
+                <app-icon icon="lucide:trash-2" size="14px"></app-icon>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="img-preview-card add-more"
+            *ngIf="uploadedImages.length < 5"
+            (click)="fileInput.click()"
+          >
+            <app-icon icon="lucide:plus" size="24px"></app-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- VARIANTS -->
+      <div class="card">
+        <div class="card-title">
+          Variants
+          <div class="btn btn-ghost" (click)="addVariant()">+ Add Variant</div>
+        </div>
+
+        <table class="variants-table" *ngIf="variants.length > 0">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Color</th>
+              <th>Stock</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody formArrayName="variants">
+            <tr
+              *ngFor="let v of variants.controls; let i = index"
+              [formGroupName]="i"
+            >
+              <td>
+                <input class="mock-input" formControlName="size" placeholder="e.g. S, M, L" />
+              </td>
+              <td>
+                <input class="mock-input" formControlName="color" placeholder="e.g. Red" />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  class="mock-input"
+                  formControlName="stock"
+                  placeholder="0"
+                />
+              </td>
+              <td>
+                <div class="action-icon" (click)="removeVariant(i)">
+                  <app-icon icon="lucide:trash-2" size="16px"></app-icon>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-variants" *ngIf="variants.length === 0">
+          No variants added yet. Click "+ Add Variant" to get started.
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="column">
+      <!-- STATUS -->
+      <div class="card">
+        <div class="card-title">Status & Visibility</div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+
+          <select class="mock-input" formControlName="status">
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Inactive</option>
+          </select>
+        </div>
+
+        <div style="margin-top: 24px">
+          <!-- FEATURED -->
+          <div class="mock-switch-row">
+            <div class="switch-info">
+              <div class="switch-title">Featured Product</div>
+              <div class="switch-desc">Show on homepage banner</div>
+            </div>
+
+            <div
+              class="mock-switch"
+              [class.active]="productForm.get('is_featured')?.value"
+              (click)="toggleSwitch('is_featured')"
+            >
+              <div class="switch-knob"></div>
+            </div>
+          </div>
+
+          <!-- TRENDING -->
+          <div class="mock-switch-row">
+            <div class="switch-info">
+              <div class="switch-title">Trending</div>
+              <div class="switch-desc">Add trending badge</div>
+            </div>
+
+            <div
+              class="mock-switch"
+              [class.active]="productForm.get('is_trending')?.value"
+              (click)="toggleSwitch('is_trending')"
+            >
+              <div class="switch-knob"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORGANIZATION -->
+      <div class="card">
+        <div class="card-title">Organization</div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="mock-input" formControlName="category_id">
+            <option value="">Select Category</option>
+            <option *ngFor="let c of categories" [value]="c.id">
+              {{ c.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Material</label>
+          <select class="mock-input" formControlName="material_id">
+            <option value="">Select Material</option>
+            <option *ngFor="let m of materials" [value]="m.id">
+              {{ m.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PRICING -->
+      <div class="card">
+        <div class="card-title">Pricing</div>
+
+        <div class="form-group">
+          <label class="form-label">Price</label>
+          <input
+            type="number"
+            class="mock-input"
+            formControlName="price"
+            placeholder="0.00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Discount Price</label>
+          <input
+            type="number"
+            class="mock-input"
+            formControlName="discount_price"
+            placeholder="0.00"
+          />
+        </div>
+
+        <div style="color: green">Discount: {{ discountPercent }}%</div>
+      </div>
+    </div>
+  </div>
+</form>

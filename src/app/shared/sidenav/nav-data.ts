@@ -9,4 +9,14 @@ export const navbarData = [
     iconName: 'lucide:package',
     RouterLink: '/admin/products',
   },
+  {
+    label: 'Categories',
+    iconName: 'lucide:layers',
+    RouterLink: '/admin/categories',
+  },
+  {
+    label: 'Materials',
+    iconName: 'lucide:palette',
+    RouterLink: '/admin/materials',
+  },
 ];

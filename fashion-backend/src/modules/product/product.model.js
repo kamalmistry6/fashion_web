@@ -3,7 +3,7 @@ const pool = require("../../config/db");
 exports.getProducts = async (filters, pagination) => {
   const { offset, perPage } = pagination;
 
-  let conditions = ["p.status = 1"];
+  let conditions = [];
   let values = [];
 
   if (filters.category) {
@@ -52,6 +52,9 @@ exports.getProducts = async (filters, pagination) => {
       p.discount_price,
       p.avg_rating,
       p.total_reviews,
+      p.status,
+      p.is_featured,
+      p.is_trending,
       c.name AS category,
       m.name AS material,
       pi.image_url
@@ -76,6 +79,7 @@ exports.getProducts = async (filters, pagination) => {
     total,
   };
 };
+
 exports.createProduct = async (productData) => {
   const connection = await pool.getConnection();
 
@@ -149,6 +153,7 @@ exports.createProduct = async (productData) => {
     connection.release();
   }
 };
+
 exports.updateProduct = async (id, data) => {
   const connection = await pool.getConnection();
 
@@ -247,7 +252,7 @@ exports.getProductBySlug = async (slug) => {
   // 1️⃣ Get main product
   const [productRows] = await pool.query(
     `
-    SELECT 
+    SELECT
       p.id,
       p.name,
       p.slug,
@@ -256,14 +261,17 @@ exports.getProductBySlug = async (slug) => {
       p.discount_price,
       p.avg_rating,
       p.total_reviews,
+      p.status,
       p.is_featured,
       p.is_trending,
+      p.category_id,
+      p.material_id,
       c.name AS category,
       m.name AS material
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     LEFT JOIN materials m ON p.material_id = m.id
-    WHERE p.slug = ? AND p.status = 1
+    WHERE p.slug = ?
     `,
     [slug],
   );

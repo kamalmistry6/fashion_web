@@ -1,0 +1,44 @@
+<form [formGroup]="materialForm" (ngSubmit)="submit()" class="page-container">
+  <div class="page-header">
+    <div>
+      <div class="breadcrumbs">
+        <span style="cursor: pointer" routerLink="/admin/materials">Materials</span>
+        <app-icon icon="lucide:chevron-right" size="14px"></app-icon>
+        <span style="color: var(--foreground); font-weight: 500">
+          {{ isEditMode ? 'Edit Material' : 'Add New Material' }}
+        </span>
+      </div>
+      <h1 class="page-title">{{ isEditMode ? 'Edit Material' : 'Add New Material' }}</h1>
+    </div>
+
+    <div class="header-buttons">
+      <div class="btn btn-secondary" (click)="discard()">Discard</div>
+      <button type="submit" class="btn btn-primary">
+        <app-icon icon="lucide:check" size="16px"></app-icon>
+        {{ isEditMode ? 'Update Material' : 'Save Material' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Material Name</label>
+        <input class="mock-input" formControlName="name" placeholder="Enter material name" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Slug</label>
+        <input class="mock-input muted" formControlName="slug" readonly />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="mock-input" formControlName="status">
+          <option [ngValue]="true">Active</option>
+          <option [ngValue]="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</form>

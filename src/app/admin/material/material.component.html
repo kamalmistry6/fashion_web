@@ -1,0 +1,92 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <div class="breadcrumbs">
+        <span style="cursor: pointer">Materials</span>
+        <app-icon icon="lucide:chevron-right" size="14px"></app-icon>
+        <span style="color: var(--foreground); font-weight: 500">Material List</span>
+      </div>
+      <h1 class="page-title">Materials</h1>
+    </div>
+    <div class="header-buttons">
+      <button class="btn btn-primary" (click)="onAdd()">
+        <app-icon icon="lucide:plus" size="16px"></app-icon>
+        Add Material
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div>
+        <div class="card-title">All Materials</div>
+        <div class="card-subtitle">Manage product materials.</div>
+      </div>
+    </div>
+
+    <div class="filters-row">
+      <div class="filters-left">
+        <div class="filter-input-wrap">
+          <app-icon icon="lucide:search" size="16px"></app-icon>
+          <input
+            [(ngModel)]="search"
+            (ngModelChange)="onFiltersChange()"
+            class="filter-input"
+            type="text"
+            placeholder="Search by material name..."
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="isLoading">
+            <td colspan="4" style="text-align: center; padding: 32px">
+              Loading materials...
+            </td>
+          </tr>
+
+          <tr *ngIf="!isLoading && materials.length === 0">
+            <td colspan="4" style="text-align: center; padding: 32px">
+              No materials found.
+            </td>
+          </tr>
+
+          <tr *ngFor="let mat of materials">
+            <td style="font-weight: 600">{{ mat.name }}</td>
+            <td style="color: var(--muted-foreground)">{{ mat.slug }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-active]="mat.status"
+                [class.badge-inactive]="!mat.status"
+              >
+                {{ mat.status ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="icon-button" (click)="onEdit(mat.id)">
+                  <app-icon icon="lucide:pencil" style="font-size: 16px"></app-icon>
+                </button>
+                <button class="icon-button" (click)="onDelete(mat.id)">
+                  <app-icon icon="lucide:trash-2" style="font-size: 16px; color: var(--destructive)"></app-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

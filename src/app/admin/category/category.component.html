@@ -1,0 +1,94 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <div class="breadcrumbs">
+        <span style="cursor: pointer">Categories</span>
+        <app-icon icon="lucide:chevron-right" size="14px"></app-icon>
+        <span style="color: var(--foreground); font-weight: 500">Category List</span>
+      </div>
+      <h1 class="page-title">Categories</h1>
+    </div>
+    <div class="header-buttons">
+      <button class="btn btn-primary" (click)="onAdd()">
+        <app-icon icon="lucide:plus" size="16px"></app-icon>
+        Add Category
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div>
+        <div class="card-title">All Categories</div>
+        <div class="card-subtitle">Manage product categories.</div>
+      </div>
+    </div>
+
+    <div class="filters-row">
+      <div class="filters-left">
+        <div class="filter-input-wrap">
+          <app-icon icon="lucide:search" size="16px"></app-icon>
+          <input
+            [(ngModel)]="search"
+            (ngModelChange)="onFiltersChange()"
+            class="filter-input"
+            type="text"
+            placeholder="Search by category name..."
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="isLoading">
+            <td colspan="5" style="text-align: center; padding: 32px">
+              Loading categories...
+            </td>
+          </tr>
+
+          <tr *ngIf="!isLoading && categories.length === 0">
+            <td colspan="5" style="text-align: center; padding: 32px">
+              No categories found.
+            </td>
+          </tr>
+
+          <tr *ngFor="let cat of categories">
+            <td style="font-weight: 600">{{ cat.name }}</td>
+            <td style="color: var(--muted-foreground)">{{ cat.slug }}</td>
+            <td>{{ cat.description || '—' }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-active]="cat.status"
+                [class.badge-inactive]="!cat.status"
+              >
+                {{ cat.status ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="icon-button" (click)="onEdit(cat.id)">
+                  <app-icon icon="lucide:pencil" style="font-size: 16px"></app-icon>
+                </button>
+                <button class="icon-button" (click)="onDelete(cat.id)">
+                  <app-icon icon="lucide:trash-2" style="font-size: 16px; color: var(--destructive)"></app-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

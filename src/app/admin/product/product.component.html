@@ -2,9 +2,11 @@
   <div class="page-header">
     <div>
       <div class="breadcrumbs">
-        <span style="cursor: pointer;">Products</span>
+        <span style="cursor: pointer">Products</span>
         <app-icon icon="lucide:chevron-right" size="14px"></app-icon>
-        <span style="color: var(--foreground); font-weight: 500;">Product List</span>
+        <span style="color: var(--foreground); font-weight: 500"
+          >Product List</span
+        >
       </div>
       <h1 class="page-title">Products</h1>
     </div>
@@ -13,10 +15,10 @@
         <app-icon icon="lucide:download" size="16px"></app-icon>
         Export
       </div>
-      <div class="btn btn-primary">
+      <button class="btn btn-primary" (click)="onAdd()">
         <app-icon icon="lucide:plus" size="16px"></app-icon>
         Add Product
-      </div>
+      </button>
     </div>
   </div>
 
@@ -24,10 +26,12 @@
     <div class="card-header-row">
       <div>
         <div class="card-title">All Products</div>
-        <div class="card-subtitle">Manage all sarees and clothing items in one place.</div>
+        <div class="card-subtitle">
+          Manage all sarees and clothing items in one place.
+        </div>
       </div>
-      <div style="font-size: 12px; color: var(--muted-foreground);">
-        Showing {{ startItem }}–{{ endItem }} of {{ total }}
+      <div style="font-size: 12px; color: var(--muted-foreground)">
+        Showing {{ paginationStartItem }}–{{ paginationEndItem }} of {{ total }}
       </div>
     </div>
 
@@ -35,23 +39,38 @@
       <div class="filters-left">
         <div class="filter-input-wrap">
           <app-icon icon="lucide:search" size="16px"></app-icon>
-          <input [(ngModel)]="search" (ngModelChange)="onFiltersChange()" class="filter-input" type="text"
-            placeholder="Search by product name..." id="search-input" />
+          <input
+            [(ngModel)]="search"
+            (ngModelChange)="onFiltersChange()"
+            class="filter-input"
+            type="text"
+            placeholder="Search by product name..."
+            id="search-input"
+          />
         </div>
-        <select [(ngModel)]="category" (ngModelChange)="onFiltersChange()" class="filter-select" style="width: 180px;"
-          id="category-filter">
+        <select
+          [(ngModel)]="category"
+          (ngModelChange)="onFiltersChange()"
+          class="filter-select"
+          style="width: 180px"
+          id="category-filter"
+        >
           <option value="">All categories</option>
-          <option value="sarees">Sarees</option>
-          <option value="kurtas">Kurtas</option>
-          <option value="lehengas">Lehengas</option>
+          <option *ngFor="let c of categories" [value]="c.slug">
+            {{ c.name }}
+          </option>
         </select>
-        <select [(ngModel)]="material" (ngModelChange)="onFiltersChange()" class="filter-select" style="width: 180px;"
-          id="material-filter">
+        <select
+          [(ngModel)]="material"
+          (ngModelChange)="onFiltersChange()"
+          class="filter-select"
+          style="width: 180px"
+          id="material-filter"
+        >
           <option value="">All materials</option>
-          <option value="silk">Silk</option>
-          <option value="organza">Organza</option>
-          <option value="cotton">Cotton</option>
-          <option value="silk-blend">Silk Blend</option>
+          <option *ngFor="let m of materials" [value]="m.slug">
+            {{ m.name }}
+          </option>
         </select>
       </div>
     </div>
@@ -61,7 +80,7 @@
     </div> -->
 
     <div class="table-wrapper">
-      <table class="products-table">
+      <table class="data-table">
         <thead>
           <tr>
             <th>Image</th>
@@ -71,21 +90,31 @@
             <th>Price</th>
             <th>Rating</th>
             <th>Reviews</th>
+            <th>Featured</th>
+            <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <!-- <tr *ngIf="isLoading">
-            <td colspan="7">Loading products...</td>
-          </tr> -->
+          <tr *ngIf="isLoading">
+            <td colspan="10" style="text-align: center; padding: 32px">
+              Loading products...
+            </td>
+          </tr>
 
-          <!-- <tr *ngIf="!isLoading && products.length === 0">
-            <td colspan="7">No products found for the selected filters.</td>
-          </tr> -->
+          <tr *ngIf="!isLoading && allProducts.length === 0">
+            <td colspan="10" style="text-align: center; padding: 32px">
+              No products found for the selected filters.
+            </td>
+          </tr>
 
           <tr *ngFor="let product of allProducts">
             <td>
               <div class="product-thumbnail">
-                <img [src]="product.image_url || 'https://placehold.co/80x80?text=No+Image'" [alt]="product.name" />
+                <img
+                  [src]="getImageSrc(product.image_url)"
+                  [alt]="product.name"
+                />
               </div>
             </td>
             <td>
@@ -94,44 +123,65 @@
                 <span class="product-meta">Slug: {{ product.slug }}</span>
               </div>
             </td>
-            <td>{{ product.category || 'N/A' }}</td>
-            <td>{{ product.material || 'N/A' }}</td>
+            <td>{{ product.category || "N/A" }}</td>
+            <td>{{ product.material || "N/A" }}</td>
             <td>
-              <div class="price-cell-main">{{ product.price | currency:'INR':'symbol':'1.0-0' }}</div>
+              <div class="price-cell-main">
+                {{ product.price | currency: "INR" : "symbol" : "1.0-0" }}
+              </div>
               <div *ngIf="product.discount_price" class="price-cell-sub">
-                Offer {{ product.discount_price | currency:'INR':'symbol':'1.0-0' }}
+                MRP
+                {{
+                  product.discount_price | currency: "INR" : "symbol" : "1.0-0"
+                }}
               </div>
             </td>
             <td>{{ product.avg_rating || 0 }}</td>
             <td>{{ product.total_reviews }}</td>
+            <td>
+              <div class="toggle-pill" [class.on]="product.is_featured">
+                <div class="toggle-pill-dot"></div>
+                <span>{{ product.is_featured ? 'On' : 'Off' }}</span>
+              </div>
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-active]="product.status"
+                [class.badge-inactive]="!product.status"
+              >
+                {{ product.status ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="icon-button" (click)="onEdit(product.slug)">
+                  <app-icon
+                    icon="lucide:pencil"
+                    style="font-size: 16px"
+                  ></app-icon>
+                </button>
+                <button class="icon-button">
+                  <app-icon
+                    icon="lucide:trash-2"
+                    style="font-size: 16px; color: var(--destructive)"
+                  ></app-icon>
+                </button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 12px; color: var(--muted-foreground);">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div class="mock-select" style="width: 120px;">
-          <select class="filter-select" [(ngModel)]="pageSize" (change)="changePageSize(pageSize)">
-            <option *ngFor="let size of pageSizeOptions" [value]="size">
-              {{ size }} / page
-            </option>
-          </select>
-
-          <!-- <app-icon icon="lucide:chevron-down" style="font-size: 16px"></app-icon> -->
-        </div>
-        <!-- <span>Selected: 1 • Bulk actions</span> -->
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div class="btn btn-secondary" (click)="goToPrevPage()" [class.disabled]="currentPage === 1">
-          <app-icon icon="lucide:chevron-left" style="font-size: 16px"></app-icon>
-        </div>
-        Page {{ currentPage }} of {{ totalPages }}
-        <div class="btn btn-secondary" (click)="goToNextPage()" [class.disabled]="currentPage === totalPages">
-          <app-icon icon="lucide:chevron-right" style="font-size: 16px"></app-icon>
-        </div>
-      </div>
-    </div>
+    <app-custom-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [pageSize]="pageSize"
+      [total]="total"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-custom-pagination>
   </div>
 </div>

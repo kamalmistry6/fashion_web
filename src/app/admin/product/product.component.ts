@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import {
   ApiResponse,
+  Category,
+  Material,
   Product,
-  ProductListData,
 } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
+import { MaterialService } from '../../services/material.service';
 import { HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { ToasterService } from '../../shared/toaster/toaster.service';
 
 @Component({
   selector: 'app-product',
@@ -22,19 +27,63 @@ export class ProductComponent implements OnInit {
 
   total = 0;
   totalPages = 0;
-  hasNext = false;
   pageSizeOptions = [5, 10, 20, 50];
 
-  category?: '';
-  material?: '';
-  search?: '';
+  category = '';
+  material = '';
+  search = '';
   minPrice?: number;
   maxPrice?: number;
 
-  constructor(private productService: ProductService) {}
+  categories: Category[] = [];
+  materials: Material[] = [];
+
+  private readonly backendUrl = 'http://localhost:5000';
+
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private materialService: MaterialService,
+    private router: Router,
+    private toaster: ToasterService,
+  ) {}
 
   ngOnInit(): void {
+    this.loadCategories();
+    this.loadMaterials();
     this.loadProducts();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getCategories().subscribe(
+      (response: any) => {
+        if (response.data) {
+          this.categories = response.data;
+        }
+      },
+      () => {
+        this.toaster.error('Failed to fetch categories');
+      },
+    );
+  }
+
+  loadMaterials(): void {
+    this.materialService.getMaterials().subscribe(
+      (response: any) => {
+        if (response.data) {
+          this.materials = response.data;
+        }
+      },
+      () => {
+        this.toaster.error('Failed to fetch materials');
+      },
+    );
+  }
+
+  getImageSrc(imageUrl: string | null): string {
+    if (!imageUrl) return 'https://placehold.co/80x80?text=No+Image';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return this.backendUrl + imageUrl;
   }
 
   getFilterParams(): HttpParams {
@@ -47,7 +96,6 @@ export class ProductComponent implements OnInit {
     if (this.minPrice != null) params = params.set('minPrice', this.minPrice);
     if (this.maxPrice != null) params = params.set('maxPrice', this.maxPrice);
 
-    // 👉 ADD PAGINATION
     params = params.set('page', this.currentPage);
     params = params.set('limit', this.pageSize);
 
@@ -65,35 +113,24 @@ export class ProductComponent implements OnInit {
         this.allProducts = data.products;
         this.total = data.total;
         this.totalPages = data.totalPages;
-        this.hasNext = data.hasNext;
 
         this.isLoading = false;
       },
-      (error) => {
-        console.error('Error fetching product data:', error);
-        alert('Failed to fetch product data');
+      () => {
+        this.toaster.error('Failed to fetch products');
         this.isLoading = false;
       },
     );
   }
 
-  goToNextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.loadProducts();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadProducts();
   }
 
-  goToPrevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.loadProducts();
-    }
-  }
-
-  changePageSize(size: number) {
+  onPageSizeChange(size: number): void {
     this.pageSize = size;
-    this.currentPage = 1; // reset
+    this.currentPage = 1;
     this.loadProducts();
   }
 
@@ -102,12 +139,19 @@ export class ProductComponent implements OnInit {
     this.loadProducts();
   }
 
-  get startItem(): number {
+  get paginationStartItem(): number {
     if (this.total === 0) return 0;
     return (this.currentPage - 1) * this.pageSize + 1;
   }
-  get endItem(): number {
+  get paginationEndItem(): number {
     const end = this.currentPage * this.pageSize;
     return end > this.total ? this.total : end;
+  }
+
+  onEdit(slug: string) {
+    this.router.navigate(['admin/products/edit', slug]);
+  }
+  onAdd() {
+    this.router.navigate(['admin/products/add']);
   }
 }
